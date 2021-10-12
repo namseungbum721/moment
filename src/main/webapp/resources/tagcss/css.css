@@ -1,0 +1,29 @@
+.badge {
+    display: inline-block;
+    min-width: 10px;
+    padding: 4px 7px;
+    font-size: 12px;
+    font-weight: 550;
+    line-height: 1;
+    color: #2f2f2f;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    background-color: #ececec;
+    border-radius: 5px;
+    margin-right: 8px;
+}
+.bootstrap-tagsinput{
+    width: 100%;
+    height: 34px;
+    padding: 6px 12px;
+
+}
+
+.xClass{
+    font-size: 10px;
+    color: #777;
+    margin-left: 4px;
+    cursor: pointer;
+    padding: 3px;
+}

@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.days.moment.board.mapper.BoardMapper">
+
+    <sql id="search">
+        <if test="type != null">
+            <foreach collection="arr" item="item" separator="OR" open="WHERE(" close=") ">
+                <if test="item == 'T'.toString()">
+                    title like concat('%', #{keyword}, '%')
+                </if>
+                <if test="item == 'C'.toString()">
+                    content like concat('%', #{keyword}, '%')
+                </if>
+                <if test="item == 'W'.toString()">
+                    writer like concat('%', #{keyword}, '%')
+                </if>
+            </foreach>
+        </if>
+    </sql>
+
+    <insert id="insert">
+        insert into user_board(content,drawing, p_name, p_address, p_lng, p_lat)
+        values(#{content},#{drawing},#{pName},#{pAddress},#{pLng},#{pLat})
+
+        <selectKey order="AFTER" resultType="long" keyProperty="bNum">
+            select last_insert_id()
+        </selectKey>
+
+    </insert>
+
+    <select id="getList" resultType="com.days.moment.board.domain.Board">
+        select
+        b_num as bNum,
+        content as content,
+        drawing as drawing,
+        b_reg_date as bModDate,
+        b_mod_date as bRegDate,
+        p_name as pName,
+        p_address as pAddress,
+        p_lng as pLng,
+        p_lat as pLat,
+        b_pic_count as bPicCount
+
+        from user_board
+
+        <include refid="search"></include>
+
+        order by bNum desc limit #{skip}, #{size}
+    </select>
+
+    <select id="getCount" resultType="int">
+        select count(b_num) from user_board
+
+        <include refid="search"></include>
+    </select>
+
+
+
+    <resultMap id="boardMap" type="com.days.moment.board.domain.Board">
+        <id property="bNum" column="b_num"></id>
+        <result property="content" column="content"></result>
+        <result property="drawing" column="drawing"></result>
+        <result property="bRegDate" column="b_reg_date"></result>
+        <result property="bModDate" column="b_mod_date"></result>
+        <result property="pName" column="p_name"></result>
+        <result property="pAddress" column="p_address"></result>
+        <result property="pLng" column="p_lng"></result>
+        <result property="pLat" column="p_lat"></result>
+        <result property="bPicCount" column="b_pic_count"></result>
+        <collection property="attachList" resultMap="attachMap"></collection>
+        <collection property="tagList" resultMap="tagMap"></collection>
+    </resultMap>
+
+    <resultMap id="attachMap" type="com.days.moment.board.domain.BoardAttach">
+        <result property="uuid" column="uuid"></result>
+        <result property="bNum" column="b_num"></result>
+        <result property="fileName" column="fileName"></result>
+        <result property="path" column="path"></result>
+        <result property="image" column="image"></result>
+        <result property="uploadDate" column="upload_date"></result>
+        <result property="selectLocation" column="select_location"></result>
+    </resultMap>
+
+    <resultMap id="tagMap" type="com.days.moment.board.domain.BoardTag">
+        <result property="bNum" column="b_num"></result>
+        <result property="tag" column="tag_name"></result>
+    </resultMap>
+
+    <select id="select" resultMap="boardMap">
+        select *
+        from
+            user_board board left join pic ta on board.b_num = ta.b_num
+        where board.b_num = #{bNum}
+    </select>
+
+
+    <delete id="delete">
+        delete from user_board where b_num = #{bNum}
+    </delete>
+
+    <update id="update">
+        update user_board set content = #{content}, b_mod_date = now()
+        where b_num = #{bNum}
+    </update>
+
+    <update id="updateCount">
+        update user_board set b_pic_count =
+
+                                      (select count(image) from pic where pic.b_num = user_board.b_num)
+    </update>
+
+    <update id="updateTag">
+        update user_board set tag =
+                                      (select tag_name from taglist where user_board.b_num = #{bNum});
+    </update>
+
+    <insert id="insertTag">
+        insert into taglist(b_num,tag_name) values (#{bNum}, #{tag})
+    </insert>
+
+    <delete id="deleteTag">
+        delete from taglist where b_num = #{bNum}
+    </delete>
+
+    <insert id="insertAttach">
+        insert into pic (uuid,b_num,fileName,path,image)
+        values (#{uuid}, #{bNum}, #{fileName}, #{path}, #{image})
+    </insert>
+
+    <delete id="deleteAttach">
+        delete from pic where b_num = #{bNum}
+    </delete>
+
+
+
+</mapper>
